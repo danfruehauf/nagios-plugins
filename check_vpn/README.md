@@ -135,7 +135,7 @@ If your hosts are not really aligned with nice hostnames, another way of generat
 
 This was tested fully with OpenVPN and SSH, however I still need to setup a proper test environment for L2TP and PPTP.
 
-In case multiple access is still being an issue, please refer to the section about <b>Locking</b>.
+In case multiple access is still being an issue, please refer to the section about [Locking](README.md#locking).
 
 ### Same IP, Different Interface
 
@@ -157,4 +157,4 @@ If you may be connecting to two (or more) different servers who may assign you t
 The behavior in this case would be undefined. I've asked on Server Fault just to be sure and here is the link:
 http://serverfault.com/questions/459919/multiple-vpn-devices-with-the-same-ip
 
-If you are facing such a situation please refer to the section of <b>Locking</b>.
+If you are facing such a situation please refer to the section of [Locking](README.md#locking)
