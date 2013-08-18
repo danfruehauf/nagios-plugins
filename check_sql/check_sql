@@ -1,7 +1,7 @@
 #! /usr/bin/perl -w
 
 #
-# check_sql - run a simple test query against a SQL Server
+# check_sql - run a simple test query against a database via DBI
 # Copyright (C) 2013 Dan Fruehauf <malkoadan@gmail.com>
 # Copyright (c) 2007 Thomas Guyot-Sionnest <tguyot@gmail.com>
 # Copyright (c) 2007 Nagios Plugin Development Team
@@ -42,7 +42,7 @@ my $np = Nagios::Plugin->new(
 	version => $VERSION,
 	plugin  => $PROGNAME,
 	shortname => uc($PROGNAME),
-	blurb => 'Run a simple test query against a SQL Server',
+	blurb => 'Run a simple test query against a database',
 	extra   => "\n\nCopyright (c) 2007 Nagios Plugin Development Team",
 	timeout => 30,
 );
@@ -277,8 +277,8 @@ my $status = max_state(@results);
 if ($nonnumeric) {
 	$np->nagios_exit($status, "Result is not numeric with result threshold defined ($elapsed seconds)");
 } elsif ($show) {
-	$np->nagios_exit($status, "SQL Server $label: $result ($elapsed seconds)");
+	$np->nagios_exit($status, "SQL $label: $result ($elapsed seconds)");
 } else {
-	$np->nagios_exit($status, "SQL Server responded in $elapsed seconds");
+	$np->nagios_exit($status, "SQL responded in $elapsed seconds");
 }
 
