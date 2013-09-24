@@ -21,7 +21,7 @@
 ###########
 [ x"$OPENVPN_DEVICE_PREFIX" = x ] && declare -r OPENVPN_DEVICE_PREFIX=tun
 [ x"$OPENVPN_PORT" = x ] && declare -i -r OPENVPN_PORT=1194
-[ x"$OPENVPN_PROTOCOL" = x ] && declare -i -r OPENVPN_PROTOCOL=tcp
+[ x"$OPENVPN_PROTOCOL" = x ] && declare -r OPENVPN_PROTOCOL=tcp
 
 # returns a free vpn device
 _openvpn_allocate_vpn_device() {
@@ -60,7 +60,7 @@ _openvpn_start_vpn() {
 		return 1
 	fi
 
-	if [ $OPENVPN_PROTOCOL -eq 'tcp' ]; then
+	if [ $OPENVPN_PROTOCOL == 'tcp' ]; then
 		check_open_port $lns $OPENVPN_PORT
 		if [ $? -ne 0 ]; then
 			ERROR_STRING="Port '$OPENVPN_PORT' closed on '$lns'"
