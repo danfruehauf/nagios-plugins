@@ -59,10 +59,18 @@ _openvpn_start_vpn() {
 		return 1
 	fi
 
-	check_open_port $lns $OPENVPN_PORT
-	if [ $? -ne 0 ]; then
-		ERROR_STRING="Port '$OPENVPN_PORT' closed on '$lns'"
-		return 1
+	# specific parsing of options such as port and protocol
+	local protocol=`_openvpn_parse_arg_from_extra_options proto "$@"`
+	local -i port=`_openvpn_parse_arg_from_extra_options port "$@"`
+	[ $port -eq 0 ] && port=$OPENVPN_PORT
+
+	# skip port testing if on udp
+	if [ x"$protocol" != x"udp" ]; then
+		check_open_port $lns $port
+		if [ $? -ne 0 ]; then
+			ERROR_STRING="Port '$port' closed on '$lns'"
+			return 1
+		fi
 	fi
 
 	local tmp_username_password=`mktemp`
@@ -130,5 +138,15 @@ _openvpn_is_vpn_up() {
 	local device=$1; shift
 	ifconfig $device >& /dev/null && \
 		ip addr show dev $device | grep -q "\binet\b"
+}
+
+# returns a parsed argument from extra options passed to openvpn
+# $1 - argument name (such as proto, port, etc)
+# "$@" - argument list
+_openvpn_parse_arg_from_extra_options() {
+	local arg=$1; shift
+	# if arg=proto and $@ is '--proto tcp --port 1194 --arg something' we
+	# should return 'tcp'
+	echo "$@" | sed -e 's#[[:space:]]\+# #g' -e 's#--#\n#g' | grep "^$arg\b" | tail -1 | cut -d' ' -f2
 }
 
