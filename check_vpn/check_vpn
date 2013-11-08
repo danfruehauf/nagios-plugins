@@ -163,7 +163,12 @@ vpn_connectivity_check() {
 	source_based_routing $device up
 
 	# perform test
-	curl --interface $device --connect-timeout 10 --speed-time 5 -s -o /dev/null $test_url
+	curl
+		--interface $device  \
+		--connect-timeout 10 \
+		--speed-time 5       \
+		-w "time=%{time_connect}s;size=%{size_download}B" \
+		-s -o /dev/null $test_url
 	local -i retval=$?
 
 	# remove routing
@@ -226,12 +231,14 @@ main() {
 	# start vpn
 	_${type}_start_vpn $lns $username $password $device "$@"
 	if [ $? -eq 0 ] && wait_for_vpn_to_come_up $type $lns $device; then
-		if vpn_connectivity_check $device $test_url; then
-			echo "OK: VPN to '$lns' up and running on '$device', '$test_url' reachable"
+		local tmp_perf_data=`mktemp`
+		if vpn_connectivity_check $device $test_url > $tmp_perf_data; then
+			echo "OK: VPN to '$lns' up and running on '$device', '$test_url' reachable|"`cat $tmp_perf_data`
 		else
-			echo "Warning: VPN ($type) up, connectivity check failed to '$test_url'"
+			echo "Warning: VPN ($type) up, connectivity check failed to '$test_url'|"`cat $tmp_perf_data`
 			retval=1
 		fi
+		rm -f $tmp_perf_data
 	else
 		echo "Critical: VPN ($type) connection failed to '$lns': '$ERROR_STRING'"
 		retval=2
