@@ -166,7 +166,7 @@ vpn_connectivity_check() {
 	curl --interface $device \
 		--connect-timeout 10 \
 		--speed-time 5       \
-		-w "time=%{time_connect}s;;;0.000000 size=%{size_download}B;;;0" \
+		-w "time=%{time_connect}s;size=%{size_download}B" \
 		-s -o /dev/null $test_url
 	local -i retval=$?
 
