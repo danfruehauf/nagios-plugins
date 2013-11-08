@@ -20,7 +20,8 @@
 # OPENVPN #
 ###########
 [ x"$OPENVPN_DEVICE_PREFIX" = x ] && declare -r OPENVPN_DEVICE_PREFIX=tun
-declare -i -r OPENVPN_PORT=1194
+[ x"$OPENVPN_PORT" = x ] && declare -i -r OPENVPN_PORT=1194
+[ x"$OPENVPN_PROTOCOL" = x ] && declare -r OPENVPN_PROTOCOL=tcp
 
 # returns a free vpn device
 _openvpn_allocate_vpn_device() {
@@ -59,19 +60,22 @@ _openvpn_start_vpn() {
 		return 1
 	fi
 
-	check_open_port $lns $OPENVPN_PORT
-	if [ $? -ne 0 ]; then
-		ERROR_STRING="Port '$OPENVPN_PORT' closed on '$lns'"
-		return 1
+	if [ $OPENVPN_PROTOCOL == 'tcp' ]; then
+		check_open_port $lns $OPENVPN_PORT
+		if [ $? -ne 0 ]; then
+			ERROR_STRING="Port '$OPENVPN_PORT' closed on '$lns'"
+			return 1
+		fi
+        protocol_extra_args="--connect-retry 1"
 	fi
 
 	local tmp_username_password=`mktemp`
 	echo -e "$username\n$password" > $tmp_username_password
 	openvpn --daemon "OpenVPN-$lns" \
-		--remote $lns --tls-exit --tls-client --route-nopull --connect-retry 1 --persist-key \
+		--remote $lns $OPENVPN_PORT --tls-exit --tls-client --route-nopull --persist-key \
 		--persist-tun --persist-remote-ip --persist-local-ip \
 		"$@" \
-		--script-security 2 --auth-user-pass $tmp_username_password --dev $device
+		--script-security 2 --auth-user-pass $tmp_username_password --dev $device $protocol_extra_args
 
 	local -i retval=$?
 	rm -f $tmp_username_password
