@@ -65,7 +65,7 @@ _openvpn_start_vpn() {
 	[ $port -eq 0 ] && port=$OPENVPN_PORT
 
 	# skip port testing if on udp
-	if [ x"$protocol" != x"udp" ]; then
+	if [ x"$protocol" = x"tcp" ]; then
 		check_open_port $lns $port
 		if [ $? -ne 0 ]; then
 			ERROR_STRING="Port '$port' closed on '$lns'"
