@@ -163,7 +163,8 @@ vpn_connectivity_check() {
 	source_based_routing $device up
 
 	# perform test
-	curl --interface $device \
+	curl
+		--interface $device  \
 		--connect-timeout 10 \
 		--speed-time 5       \
 		-w "time=%{time_connect}s;size=%{size_download}B" \
