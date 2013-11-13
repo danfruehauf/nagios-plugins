@@ -23,6 +23,7 @@ declare -r PPTP_DEVICE_PREFIX=ppp
 declare -i -r PPTP_PORT=1723
 
 # returns a free vpn device
+# "$@" - extra options
 _pptp_allocate_vpn_device() {
 	allocate_vpn_device $PPTP_DEVICE_PREFIX
 }
@@ -49,6 +50,7 @@ _pptp_vpn_device() {
 # $2 - username
 # $3 - password
 # $4 - device
+# "$@" - extra options
 _pptp_start_vpn() {
 	local lns=$1; shift
 	local username=$1; shift
