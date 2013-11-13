@@ -22,27 +22,15 @@
 # You'll have to enable on the SSH server:
 #PermitTunnel=yes
 
-[ x"$SSH_DEVICE_PREFIX" = x ] && declare -r SSH_DEVICE_PREFIX=tun
+declare -r SSH_DEVICE_PREFIX=tun
 declare -r SSH_VPN_NET=192.168.8.
 declare -i -r SSH_PORT=22
 
 # returns a free vpn device
-# "$@" - extra options
+# $1 - device prefix
 _ssh_allocate_vpn_device() {
-	local i
-	for i in `seq 0 255`; do
-		if ! echo $* | grep -q "\b${SSH_DEVICE_PREFIX}$i\b"; then
-			! ifconfig ${SSH_DEVICE_PREFIX}$i >& /dev/null && \
-				# TODO might cause race conditions if a few devices
-				# are allocated at the same time, but i'd rather have this
-				# than a mayhem of allocated and unused tun* devices
-				#openvpn --mktun --dev ${SSH_DEVICE_PREFIX}$i >& /dev/null && \
-				#ifconfig ${SSH_DEVICE_PREFIX}$i up >& /dev/null && \
-				echo "${SSH_DEVICE_PREFIX}$i" && \
-				return 0
-		fi
-	done
-	return 1
+	local device_prefix=$1; shift
+	allocate_vpn_device $device_prefix
 }
 
 # returns the vpn devices for the given lns
@@ -53,8 +41,10 @@ _ssh_vpn_device() {
 	local pid
 	for pid in $pids; do
 		if ps -p $pid --no-header -o cmd | grep -q "\b$lns\b"; then
-			local -i device_nr=`ps -p $pid --no-header -o cmd | grep -o "\-w [[:digit:]]\+:" | cut -d' ' -f2 | cut -d: -f1`
-			devices="$devices ${SSH_DEVICE_PREFIX}$device_nr"
+			local ssh_command_line=`ps -p $pid --no-header -o cmd`
+			local -i device_nr=`echo $ssh_command_line | grep -o "\-w [[:digit:]]\+:" | cut -d' ' -f2 | cut -d: -f1`
+			local device_prefix=`_ssh_parse_device_prefix $ssh_command_line`
+			devices="$devices ${device_prefix}${device_nr}"
 		fi
 	done
 	echo "$devices"
@@ -71,7 +61,10 @@ _ssh_start_vpn() {
 	local username=$1; shift
 	local password=$1; shift
 	local device=$1; shift
-	local -i device_nr=`echo $device | sed -e "s/^$SSH_DEVICE_PREFIX//"`
+
+	# device prefix length is always 3 (either tun, or tap)
+	local -i device_nr=${device:3}
+	local device_prefix=${device:0:3}
 	local -i retval=0
 
 	if ! which ssh >& /dev/nulll; then
@@ -79,7 +72,7 @@ _ssh_start_vpn() {
 		return 1
 	fi
 
-	local -i port=`_ssh_guess_port "$@"`
+	local -i port=`_ssh_parse_port "$@"`
 	check_open_port $lns $port
 	if [ $? -ne 0 ]; then
 		ERROR_STRING="Port '$port' closed on '$lns'"
@@ -97,16 +90,16 @@ _ssh_start_vpn() {
 
 	# TODO this is susecptible to race conditions if a few people try to
 	# allocate a device at the same time
-	local remote_device=$(ssh "$@" $username@$lns "for i in \`seq 0 255\`; do ! ifconfig $SSH_DEVICE_PREFIX\$i >& /dev/null && echo $SSH_DEVICE_PREFIX\$i && break; done")
+	local remote_device=$(ssh "$@" $username@$lns "for i in \`seq 0 255\`; do ! ifconfig $device_prefix\$i >& /dev/null && echo $device_prefix\$i && break; done")
 	if [ x"$remote_device" = x ]; then
-		ERROR_STRING="Error: Could not allocate '$SSH_DEVICE_PREFIX' device on '$lns'"
+		ERROR_STRING="Error: Could not allocate '$device_prefix' device on '$lns'"
 		return 1
 	fi
-	local -i remote_device_nr=`echo $remote_device | sed -e "s/^$SSH_DEVICE_PREFIX//"`
+	local -i remote_device_nr=`echo $remote_device | sed -e "s/^$device_prefix//"`
 
 	# pass correct tunnel parameters
 	local tunnel_parameters="-o Tunnel=point-to-point"
-	if [ "$SSH_DEVICE_PREFIX" = "tap" ]; then
+	if [ "$device_prefix" = "tap" ]; then
 		tunnel_parameters="-o Tunnel=ethernet"
 	fi
 
@@ -168,21 +161,55 @@ _ssh_is_vpn_up() {
 		ip addr show dev $device | grep -q "\binet\b"
 }
 
-
-# try to guess port from extra parameters
+# a generic function to parse options
+# $1 - short parameter name (-p, for instance)
+# $2 - long parameter name (Port, for instance)
 # "$@" - extra parameters
-_ssh_guess_port() {
+_ssh_parse_option() {
+	local short_param_name=$1; shift
+	local long_param_name=$1; shift
+	local retval
+
+	# TODO doesn't care about parameter order, short parameter always takes
+	# precedence
+
+	# probe for short parameter name
+	retval=`echo "$@" | grep -o "[[:space:]]*\-${short_param_name} [[:alnum:]]\+[[:space:]]*" | cut -d' ' -f2`
+	[ x"$retval" != x ] && echo $retval && return
+
+	# probe for long parameter name
+	retval=`echo "$@" | grep -o "[[:space:]]*\-o ${long_param_name}=[[:alnum:]]\+[[:space:]]*" | cut -d'=' -f2`
+	[ x"$retval" != x ] && echo $retval && return
+
+	return 1
+}
+
+# parse port from extra parameters
+# "$@" - extra parameters
+_ssh_parse_port() {
 	local -i port=0
+	port=`_ssh_parse_option -p Port "$@"`
 
-	# probe for '-p PORT'
-	port=`echo "$@" | grep -o "[[:space:]]*\-p [[:digit:]]\+[[:space:]]*" | cut -d' ' -f2`
-	[ $port -ne 0 ] && echo $port && return
+	if [ $port -eq 0 ]; then
+		port=$SSH_PORT
+	fi
 
-	# probe for '-o Port=PORT'
-	port=`echo "$@" | grep -o "[[:space:]]*\-o Port=[[:digit:]]\+[[:space:]]*" | cut -d'=' -f2`
-	[ $port -ne 0 ] && echo $port && return
-
-	# use default port
-	port=$SSH_PORT
 	echo $port
 }
+
+# parse device prefix from extra parameters
+# "$@" - extra parameters
+_ssh_parse_device_prefix() {
+	local device_prefix
+
+	local device=`_ssh_parse_option UNUSED Tunnel "$@"`
+
+	if [ x"$device" != x ] && [ "$device" = "ethernet" ]; then
+		device_prefix=tap
+	else
+		device_prefix=$SSH_DEVICE_PREFIX
+	fi
+
+	echo $device_prefix
+}
+

@@ -23,16 +23,10 @@ declare -r OPENVPN_DEVICE_PREFIX=tun
 declare -i -r OPENVPN_PORT=1194
 
 # returns a free vpn device
-# "$@" - extra options
+# $1 - device prefix
 _openvpn_allocate_vpn_device() {
-	# parse device from passed options
-	local device=`_openvpn_parse_arg_from_extra_options dev "$@"`
-	device=${device:0:3}
-	if [ x"$device" = x ]; then
-		device=$OPENVPN_DEVICE_PREFIX
-	fi
-
-	allocate_vpn_device $device
+	local device_prefix=$1; shift
+	allocate_vpn_device $device_prefix
 }
 
 # returns the vpn devices for the given lns
@@ -43,7 +37,8 @@ _openvpn_vpn_device() {
 	local pid
 	for pid in $pids; do
 		if ps -p $pid --no-header -o cmd | grep -q "remote $lns"; then
-			local device=`ps -p $pid --no-header -o cmd | grep -o -e "dev $DEVICE_PREFIX[0-9]\+" | cut -d' ' -f2`
+			local openvpn_command_line=`ps -p $pid --no-header -o cmd`
+			local device=`_openvpn_parse_arg_from_extra_options dev $openvpn_command_line`
 			devices="$devices $device"
 		fi
 	done

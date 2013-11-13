@@ -26,7 +26,7 @@ declare -r CHECK_VPN_LOCK=/var/run/check_vpn
 ERROR_STRING=""
 
 # returns a free vpn device
-# $1 - device prefix (tun/tap)
+# $1 - device prefix (tun/tap/ppp)
 allocate_vpn_device() {
 	local device_prefix=$1; shift
 	local i
@@ -36,6 +36,14 @@ allocate_vpn_device() {
 			return 0
 	done
 	return 1
+}
+
+# returns 0 if this is a specific device (i.e. tun0) or 1 if not. for instance
+# 'tun', 'tap' or 'ppp' are not speficic devices, but 'tun10', 'tap43' or
+# 'ppp51' are
+# $1 - device
+is_specific_device() {
+	echo $device | grep -q -o '\(tun\|tap\|ppp\)[[:digit:]]\+$'
 }
 
 ################################
@@ -220,8 +228,10 @@ main() {
 	# locks and prevents multiple access
 	[ x"$lock" = x"yes" ] && lock_check_vpn
 
-	# allocate device if user did not supply one
-	[ x"$device" = x ] && device=`_${type}_allocate_vpn_device "$@"`
+	# allocate device if user did not supply a specific one
+	if ! is_specific_device $device; then
+		device=`_${type}_allocate_vpn_device "$device"`
+	fi
 
 	local -i retval=0
 
