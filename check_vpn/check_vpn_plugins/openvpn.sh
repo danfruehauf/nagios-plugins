@@ -59,17 +59,35 @@ _openvpn_start_vpn() {
 		return 1
 	fi
 
-	check_open_port $lns $OPENVPN_PORT
-	if [ $? -ne 0 ]; then
-		ERROR_STRING="Port '$OPENVPN_PORT' closed on '$lns'"
-		return 1
+	# specific parsing of options such as port and protocol
+	local protocol=`_openvpn_parse_arg_from_extra_options proto "$@"`
+	local -i port=`_openvpn_parse_arg_from_extra_options port "$@"`
+	[ $port -eq 0 ] && port=$OPENVPN_PORT
+
+	# extra logic we're going to add to the openvpn command
+	local extra_args
+
+	# skip port testing if on udp
+	if [ x"$protocol" = x"tcp" ] || [ x"$protocol" = x"tcp-client" ]; then
+		check_open_port $lns $port
+		if [ $? -ne 0 ]; then
+			ERROR_STRING="Port '$port' closed on '$lns'"
+			return 1
+		fi
+
+		extra_args='--connect-retry 1'
 	fi
+
+	# you might want to add --nobind if the port number is taken, ti basically
+	# allocates a random port on the client side
+	#extra_args="$extra_args --nobind"
 
 	local tmp_username_password=`mktemp`
 	echo -e "$username\n$password" > $tmp_username_password
-	openvpn --daemon "OpenVPN-$lns" \
-		--remote $lns --tls-exit --tls-client --route-nopull --connect-retry 1 --persist-key \
+	openvpn --daemon "OpenVPN-$lns" --client \
+		--remote $lns --tls-exit --tls-client --route-nopull --persist-key \
 		--persist-tun --persist-remote-ip --persist-local-ip \
+		$extra_args \
 		"$@" \
 		--script-security 2 --auth-user-pass $tmp_username_password --dev $device
 
@@ -130,5 +148,15 @@ _openvpn_is_vpn_up() {
 	local device=$1; shift
 	ifconfig $device >& /dev/null && \
 		ip addr show dev $device | grep -q "\binet\b"
+}
+
+# returns a parsed argument from extra options passed to openvpn
+# $1 - argument name (such as proto, port, etc)
+# "$@" - argument list
+_openvpn_parse_arg_from_extra_options() {
+	local arg=$1; shift
+	# if arg=proto and $@ is '--proto tcp --port 1194 --arg something' we
+	# should return 'tcp'
+	echo "$@" | sed -e 's#[[:space:]]\+# #g' -e 's#--#\n#g' | grep "^$arg\b" | tail -1 | cut -d' ' -f2
 }
 
