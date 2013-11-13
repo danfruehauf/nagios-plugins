@@ -77,7 +77,7 @@ Example:
 ./check_vpn -t openvpn -H openvpn.vpn.com -u dan -p password -- --ca /etc/openvpn/ca.crt --config /etc/openvpn/vpn.com.conf --proto tcp
 
 # running on a tap device
-./check_vpn -t openvpn -H openvpn.vpn.com -u dan -p password -- --ca /etc/openvpn/ca.crt --config /etc/openvpn/vpn.com.conf --proto tcp --dev tap
+./check_vpn -t openvpn -H openvpn.vpn.com -u dan -p password -d tap -- --ca /etc/openvpn/ca.crt --config /etc/openvpn/vpn.com.conf --proto tcp
 ```
 
 ### SSH
@@ -87,7 +87,7 @@ Example:
 ./check_vpn -t ssh -H ssh.vpn.com -u dan -p DUMMY_UNUSED_BY_SSH -- -o Port=4022
 
 # running on a tap device
-SSH_DEVICE_PREFIX=tap ./check_vpn -t ssh -H ssh.vpn.com -u dan -p DUMMY_UNUSED_BY_SSH
+./check_vpn -t ssh -H ssh.vpn.com -u dan -p DUMMY_UNUSED_BY_SSH -d tap
 ```
 
 SSH plugin does not support password authentication. You will have to either use <b>ssh-agent</b> or <i>-i KEY_FILE</i>.
