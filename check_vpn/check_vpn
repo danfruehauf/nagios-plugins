@@ -221,7 +221,7 @@ main() {
 	[ x"$lock" = x"yes" ] && lock_check_vpn
 
 	# allocate device if user did not supply one
-	[ x"$device" = x ] && device=`_${type}_allocate_vpn_device`
+	[ x"$device" = x ] && device=`_${type}_allocate_vpn_device "$@"`
 
 	local -i retval=0
 

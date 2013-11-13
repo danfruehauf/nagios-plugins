@@ -27,6 +27,7 @@ declare -r SSH_VPN_NET=192.168.8.
 declare -i -r SSH_PORT=22
 
 # returns a free vpn device
+# "$@" - extra options
 _ssh_allocate_vpn_device() {
 	local i
 	for i in `seq 0 255`; do
@@ -64,6 +65,7 @@ _ssh_vpn_device() {
 # $2 - username
 # $3 - password
 # $4 - device
+# "$@" - extra options
 _ssh_start_vpn() {
 	local lns=$1; shift
 	local username=$1; shift
