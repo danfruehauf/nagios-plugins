@@ -78,6 +78,10 @@ _openvpn_start_vpn() {
 		extra_args='--connect-retry 1'
 	fi
 
+	# you might want to add --nobind if the port number is taken, ti basically
+	# allocates a random port on the client side
+	#extra_args="$extra_args --nobind"
+
 	local tmp_username_password=`mktemp`
 	echo -e "$username\n$password" > $tmp_username_password
 	openvpn --daemon "OpenVPN-$lns" --client \
