@@ -71,7 +71,8 @@ _ssh_start_vpn() {
 	local username=$1; shift
 	local password=$1; shift
 	local device=$1; shift
-	local -i device_nr=`echo $device | sed -e "s/^$SSH_DEVICE_PREFIX//"`
+	# device prefix length is always 3 (either tun, or tap)
+	local -i device_nr=${device:3}
 	local -i retval=0
 
 	if ! which ssh >& /dev/nulll; then
