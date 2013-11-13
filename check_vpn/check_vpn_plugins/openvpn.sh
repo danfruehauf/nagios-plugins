@@ -27,12 +27,12 @@ declare -i -r OPENVPN_PORT=1194
 _openvpn_allocate_vpn_device() {
 	# parse device from passed options
 	local device=`_openvpn_parse_arg_from_extra_options dev "$@"`
-	device=${device:0:3}
-	if [ x"$device" = x ]; then
-		device=$OPENVPN_DEVICE_PREFIX
+	local device_prefix=${device:0:3}
+	if [ x"$device_prefix" = x ]; then
+		device_prefix=$OPENVPN_DEVICE_PREFIX
 	fi
 
-	allocate_vpn_device $device
+	allocate_vpn_device $device_prefix
 }
 
 # returns the vpn devices for the given lns
