@@ -27,10 +27,9 @@ declare -r SSH_VPN_NET=192.168.8.
 declare -i -r SSH_PORT=22
 
 # returns a free vpn device
-# "$@" - extra options
+# $1 - device prefix
 _ssh_allocate_vpn_device() {
-	# parse device prefix from passed options
-	local device_prefix=`_ssh_parse_device_prefix "$@"`
+	local device_prefix=$1; shift
 	allocate_vpn_device $device_prefix
 }
 
@@ -176,11 +175,11 @@ _ssh_parse_option() {
 
 	# probe for short parameter name
 	retval=`echo "$@" | grep -o "[[:space:]]*\-${short_param_name} [[:alnum:]]\+[[:space:]]*" | cut -d' ' -f2`
-	[ x"$retval" != x ] && echo $port && return
+	[ x"$retval" != x ] && echo $retval && return
 
 	# probe for long parameter name
 	retval=`echo "$@" | grep -o "[[:space:]]*\-o ${long_param_name}=[[:alnum:]]\+[[:space:]]*" | cut -d'=' -f2`
-	[ x"$retval" != x ] && echo $port && return
+	[ x"$retval" != x ] && echo $retval && return
 
 	return 1
 }

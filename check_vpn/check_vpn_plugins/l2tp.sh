@@ -23,8 +23,9 @@ declare -r L2TP_DEVICE_PREFIX=ppp
 declare -i -r L2TP_PORT=1701
 
 # returns a free vpn device
-# "$@" - extra options
+# $1 - device prefix
 _l2tp_allocate_vpn_device() {
+	local device_prefix=$1; shift
 	allocate_vpn_device $L2TP_DEVICE_PREFIX
 }
 

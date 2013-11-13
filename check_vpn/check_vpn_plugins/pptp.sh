@@ -23,8 +23,9 @@ declare -r PPTP_DEVICE_PREFIX=ppp
 declare -i -r PPTP_PORT=1723
 
 # returns a free vpn device
-# "$@" - extra options
+# $1 - device prefix
 _pptp_allocate_vpn_device() {
+	local device_prefix=$1; shift
 	allocate_vpn_device $PPTP_DEVICE_PREFIX
 }
 

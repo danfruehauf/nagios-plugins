@@ -23,15 +23,9 @@ declare -r OPENVPN_DEVICE_PREFIX=tun
 declare -i -r OPENVPN_PORT=1194
 
 # returns a free vpn device
-# "$@" - extra options
+# $1 - device prefix
 _openvpn_allocate_vpn_device() {
-	# parse device from passed options
-	local device=`_openvpn_parse_arg_from_extra_options dev "$@"`
-	local device_prefix=${device:0:3}
-	if [ x"$device_prefix" = x ]; then
-		device_prefix=$OPENVPN_DEVICE_PREFIX
-	fi
-
+	local device_prefix=$1; shift
 	allocate_vpn_device $device_prefix
 }
 
