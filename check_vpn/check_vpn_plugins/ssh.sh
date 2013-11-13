@@ -106,7 +106,7 @@ _ssh_start_vpn() {
 
 	# pass correct tunnel parameters
 	local tunnel_parameters="-o Tunnel=point-to-point"
-	if [ "$SSH_DEVICE_PREFIX" = "tap" ]
+	if [ "$SSH_DEVICE_PREFIX" = "tap" ]; then
 		tunnel_parameters="-o Tunnel=ethernet"
 	fi
 
