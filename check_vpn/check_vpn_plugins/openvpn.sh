@@ -37,7 +37,8 @@ _openvpn_vpn_device() {
 	local pid
 	for pid in $pids; do
 		if ps -p $pid --no-header -o cmd | grep -q "remote $lns"; then
-			local device=`ps -p $pid --no-header -o cmd | grep -o -e "dev $DEVICE_PREFIX[0-9]\+" | cut -d' ' -f2`
+			local openvpn_command_line=`ps -p $pid --no-header -o cmd`
+			local device=`_openvpn_parse_arg_from_extra_options dev $openvpn_command_line`
 			devices="$devices $device"
 		fi
 	done
