@@ -33,6 +33,27 @@
 ###########
 # OPENVPN #
 ###########
+# test argument parsing
+test_openvpn_argument_parsing() {
+	source check_vpn_plugins/openvpn.sh
+	local arguments="--port 1194 --proto tcp --ca /etc/openvpn/ca.crt --config /etc/openvpn/vpn.com.conf"
+
+	local -i port=`_openvpn_parse_arg_from_extra_options port $arguments`
+	assertTrue "parsing port" \
+		"[ $port -eq 1194 ]"
+
+	local proto=`_openvpn_parse_arg_from_extra_options proto $arguments`
+	assertTrue "parsing proto" \
+		"[ x$proto = x'tcp' ]"
+
+	local ca=`_openvpn_parse_arg_from_extra_options ca $arguments`
+	assertTrue "parsing ca" \
+		"[ x$ca = x'/etc/openvpn/ca.crt' ]"
+
+	local config=`_openvpn_parse_arg_from_extra_options config $arguments`
+	assertTrue "parsing config" \
+		"[ x$config = x'/etc/openvpn/vpn.com.conf' ]"
+}
 
 ########
 # PPTP #
@@ -45,18 +66,18 @@
 test_ssh_argument_parsing() {
 	source check_vpn_plugins/ssh.sh
 	local arguments="-p 5009 -o LogLevel=Debug -o Host=test.example.com"
+
 	local -i port=`_ssh_parse_option -p Port $arguments`
 	assertTrue "parsing port" \
 		"[ $port -eq 5009 ]"
 
 	local log_level=`_ssh_parse_option UNUSED LogLevel $arguments`
 	assertTrue "parsing LogLevel" \
-		"[ x$log_level = xDebug ]"
+		"[ x$log_level = x'Debug' ]"
 
 	local host=`_ssh_parse_option UNUSED Host $arguments`
-	echo $host
 	assertTrue "parsing Host" \
-		"[ x$host = xtest.example.com ]"
+		"[ x$host = x'test.example.com' ]"
 }
 
 # test device prefix Tunnel=ethernet
@@ -64,7 +85,7 @@ test_ssh_device_prefix_ethernet() {
 	source check_vpn_plugins/ssh.sh
 	local device_prefix=`_ssh_parse_device_prefix -o Tunnel=ethernet`
 	assertTrue "device prefix (Tunnel=ethernet)" \
-		"[ x$device_prefix = xtap ]"
+		"[ x$device_prefix = x'tap' ]"
 }
 
 # test device prefix Tunnel=point-to-point
@@ -72,7 +93,7 @@ test_ssh_device_prefix_ptp() {
 	source check_vpn_plugins/ssh.sh
 	local device_prefix=`_ssh_parse_device_prefix -o Tunnel=point-to-point`
 	assertTrue "device prefix (Tunnel=point-to-point)" \
-		"[ x$device_prefix = xtun ]"
+		"[ x$device_prefix = x'tun' ]"
 }
 
 # test ssh integration
