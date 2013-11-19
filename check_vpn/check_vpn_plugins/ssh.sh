@@ -174,11 +174,11 @@ _ssh_parse_option() {
 	# precedence
 
 	# probe for short parameter name
-	retval=`echo "$@" | grep -o "[[:space:]]*\-${short_param_name} [[:alnum:]]\+[[:space:]]*" | cut -d' ' -f2`
+	retval=`echo "$@" | grep -o "[[:space:]]*${short_param_name} [[:print:]]\+[[:space:]]*" | cut -d' ' -f2`
 	[ x"$retval" != x ] && echo $retval && return
 
 	# probe for long parameter name
-	retval=`echo "$@" | grep -o "[[:space:]]*\-o ${long_param_name}=[[:alnum:]]\+[[:space:]]*" | cut -d'=' -f2`
+	retval=`echo "$@" | grep -o "[[:space:]]*\-o ${long_param_name}=[[:print:]]\+[[:space:]]*" | cut -d'=' -f2`
 	[ x"$retval" != x ] && echo $retval && return
 
 	return 1
