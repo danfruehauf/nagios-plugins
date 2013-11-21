@@ -21,6 +21,88 @@
 ######################
 # CORE FUNCTIONALITY #
 ######################
+# test check_open_port, unreachable host
+test_check_open_port_unresolvable() {
+	source $CHECK_VPN_NO_MAIN
+	check_open_port some.domain.that.doesnt.exist.com 1111 >& /dev/null
+	assertFalse "host unresolvable" \
+		"[ $? -eq 0 ]"
+}
+
+# test check_open_port
+test_check_open_port_filtered() {
+	source $CHECK_VPN_NO_MAIN
+	check_open_port www.google.com 1111 >& /dev/null
+	assertFalse "port filtered" \
+		"[ $? -eq 0 ]"
+}
+
+# test check_open_port, filtered port
+test_check_open_port_closed() {
+	source $CHECK_VPN_NO_MAIN
+	check_open_port localhost 1111 >& /dev/null
+	assertFalse "port closed" \
+		"[ $? -eq 0 ]"
+}
+
+# test check_open_port
+test_check_open_port_open() {
+	source $CHECK_VPN_NO_MAIN
+	check_open_port www.google.com 80 >& /dev/null
+	assertTrue "port open" \
+		"[ $? -eq 0 ]"
+}
+
+# test the is_specific_device function
+test_is_specific_device() {
+	source $CHECK_VPN_NO_MAIN
+
+	assertTrue  "tun1:   specific" "is_specific_device tun1"
+	assertTrue  "tap10:  specific" "is_specific_device tap10"
+	assertTrue  "ppp250: specific" "is_specific_device ppp250"
+
+	assertFalse "tun:    specific" "is_specific_device tun"
+	assertFalse "tap:    specific" "is_specific_device tap"
+	assertFalse "ppp:    specific" "is_specific_device ppp"
+	assertFalse "ttt20:  specific" "is_specific_device ttt20"
+	assertFalse "ttt:    specific" "is_specific_device ttt"
+}
+
+# test check_vpn locking
+test_lock_check_vpn() {
+	source $CHECK_VPN_NO_MAIN
+	rmdir $CHECK_VPN_LOCK >& /dev/null
+	assertFalse "lock doesn't exists" "test -d $CHECK_VPN_LOCK"
+	lock_check_vpn
+	assertTrue "lock exists" "test -d $CHECK_VPN_LOCK"
+}
+
+# test check_vpn locking
+test_unlock_check_vpn() {
+	source $CHECK_VPN_NO_MAIN
+	mkdir -p $CHECK_VPN_LOCK
+	assertTrue "lock exists" "test -d $CHECK_VPN_LOCK"
+	unlock_check_vpn
+	assertFalse "lock doesn't exists" "test -d $CHECK_VPN_LOCK"
+}
+
+# test routing table used for device
+test_routing_table_for_device() {
+	source $CHECK_VPN_NO_MAIN
+	local -i routing_table
+
+	routing_table=`get_routing_table_for_device tap101`
+	assertTrue "routing table for tap101" "[ $routing_table -eq 2101 ]"
+
+	routing_table=`get_routing_table_for_device tun32`
+	assertTrue "routing table for tun32" "[ $routing_table -eq 3032 ]"
+
+	routing_table=`get_routing_table_for_device ppp250`
+	assertTrue "routing table for ppp250" "[ $routing_table -eq 4250 ]"
+
+	routing_table=`get_routing_table_for_device crapper1020`
+	assertTrue "routing table for crapper1020" "[ $routing_table -eq 6020 ]"
+}
 
 ###########
 # MODULES #
@@ -120,11 +202,13 @@ _test_root() {
 ##################
 
 oneTimeSetUp() {
-	true
+	CHECK_VPN=`dirname $0`/check_vpn
+	CHECK_VPN_NO_MAIN=`mktemp`
+	sed -e 's/^main .*//' $CHECK_VPN > $CHECK_VPN_NO_MAIN
 }
 
 oneTimeTearDown() {
-	true
+	rm -f $CHECK_VPN_NO_MAIN
 }
 
 setUp() {
