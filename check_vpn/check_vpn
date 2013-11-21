@@ -109,7 +109,7 @@ wait_for_vpn_to_come_down() {
 check_open_port() {
 	local host=$1; shift
 	local -i port=$1; shift
-	nmap -Pn -sS -p$port $host | grep -q "^$port/tcp open"
+	echo | nc -w 5 $host $port >& /dev/null
 }
 
 # returns routing table number for device
