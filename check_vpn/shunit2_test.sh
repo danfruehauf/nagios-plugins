@@ -111,6 +111,66 @@ test_routing_table_for_device() {
 ########
 # L2TP #
 ########
+# test _l2tp_generate_ppp_options
+test_l2tp_generate_ppp_options() {
+	source check_vpn_plugins/l2tp.sh
+
+	local tmp_ppp_options=`mktemp`
+	local tmp_ppp_options_expected=`mktemp`
+
+	_l2tp_generate_ppp_options \
+		l2tp.vpn.com my-username my-password ppp140 \
+		require-mppe-128,require-mschapv2 > $tmp_ppp_options
+
+cat > $tmp_ppp_options_expected <<EOF
+user my-username
+password my-password
+unit 140
+lock
+noauth
+nodefaultroute
+noipdefault
+debug
+require-mppe-128
+require-mschapv2
+EOF
+
+	local -i diff_lines=`diff -urN $tmp_ppp_options $tmp_ppp_options_expected | wc -l`
+	assertTrue "ppp options not same as expected" "[ $diff_lines -eq 0 ]"
+
+	rm -f $tmp_ppp_options $tmp_ppp_options_expected
+}
+
+# test _l2tp_generate_xl2tpd_options
+test_l2tp_generate_xl2tpd_options() {
+	source check_vpn_plugins/l2tp.sh
+
+	local tmp_l2tp_options=`mktemp`
+	local tmp_l2tp_options_expected=`mktemp`
+
+	_l2tp_generate_xl2tpd_options \
+		/tmp/ppp-options l2tp.vpn.com \
+		my-username my-password ppp140 > $tmp_l2tp_options
+
+cat > $tmp_l2tp_options_expected <<EOF
+[global]
+port = 0
+access control = no
+[lac /tmp/ppp-options]
+name = /tmp/ppp-options
+lns = /tmp/ppp-options
+pppoptfile = ppp140
+ppp debug = yes
+require authentication = yes
+require chap = yes
+length bit = yes
+EOF
+
+	local -i diff_lines=`diff -urN $tmp_l2tp_options $tmp_l2tp_options_expected | wc -l`
+	assertTrue "l2tp options not same as expected" "[ $diff_lines -eq 0 ]"
+
+	rm -f $tmp_l2tp_options $tmp_l2tp_options_expected
+}
 
 ###########
 # OPENVPN #

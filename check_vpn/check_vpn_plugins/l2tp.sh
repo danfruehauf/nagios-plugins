@@ -169,8 +169,7 @@ _l2tp_generate_ppp_options() {
 	local -i device_nr=`echo $device | sed -e "s/^$L2TP_DEVICE_PREFIX//"`
 	local extra_ppp_opts=`echo "$@" | tr -s "," "\n"`
 
-	echo "
-user $username
+	echo "user $username
 password $password
 unit $device_nr
 lock
