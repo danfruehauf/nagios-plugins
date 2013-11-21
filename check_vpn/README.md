@@ -110,6 +110,11 @@ Example:
 ./check_vpn -t pptp -H pptp.vpn.com -u dan -p password -- mru 1410 mtu 1410 novj novjccomp nobsdcomp
 ```
 
+Connect to a Windows PPTP VPN server:
+```
+./check_vpn -t pptp -H windows.pptp.vpn.com -u dan -p password -- require-mppe refuse-pap refuse-eap refuse-chap refuse-mschap
+```
+
 ## Locking
 
 Running from nagios one cannot really control when checks take place. Some of the limitations listed below can be addressed by using exclusive locking with check_vpn, causing checks to run sequentially.
