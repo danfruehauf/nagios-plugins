@@ -111,6 +111,14 @@ test_routing_table_for_device() {
 ########
 # L2TP #
 ########
+# allocate device for l2tp
+test_l2tp_allocate_vpn_device() {
+	source check_vpn_plugins/l2tp.sh
+
+	local device=`_l2tp_allocate_vpn_device`
+	assertTrue "allocate l2tp device" "[ x$device = x'ppp0' ]"
+}
+
 # test _l2tp_generate_ppp_options
 test_l2tp_generate_ppp_options() {
 	source check_vpn_plugins/l2tp.sh
@@ -175,6 +183,17 @@ EOF
 ###########
 # OPENVPN #
 ###########
+# allocate device for openvpn
+test_openvpn_allocate_vpn_device() {
+	source check_vpn_plugins/openvpn.sh
+
+	local device=`_openvpn_allocate_vpn_device tap`
+	assertTrue "allocate openvpn tap device" "[ x$device = x'tap0' ]"
+
+	local device=`_openvpn_allocate_vpn_device tun`
+	assertTrue "allocate openvpn tun device" "[ x$device = x'tun0' ]"
+}
+
 # test argument parsing
 test_openvpn_argument_parsing() {
 	source check_vpn_plugins/openvpn.sh
@@ -200,10 +219,28 @@ test_openvpn_argument_parsing() {
 ########
 # PPTP #
 ########
+# allocate device for pptp
+test_pptp_allocate_vpn_device() {
+	source check_vpn_plugins/pptp.sh
+
+	local device=`_pptp_allocate_vpn_device`
+	assertTrue "allocate pptp device" "[ x$device = x'ppp0' ]"
+}
 
 #######
 # SSH #
 #######
+# allocate device for ssh
+test_ssh_allocate_vpn_device() {
+	source check_vpn_plugins/ssh.sh
+
+	local device=`_ssh_allocate_vpn_device tap`
+	assertTrue "allocate ssh tap device" "[ x$device = x'tap0' ]"
+
+	local device=`_ssh_allocate_vpn_device tun`
+	assertTrue "allocate ssh tun device" "[ x$device = x'tun0' ]"
+}
+
 # test argument parsing
 test_ssh_argument_parsing() {
 	source check_vpn_plugins/ssh.sh
