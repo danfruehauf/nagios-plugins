@@ -43,6 +43,7 @@ allocate_vpn_device() {
 # 'ppp51' are
 # $1 - device
 is_specific_device() {
+	local device=$1; shift
 	echo $device | grep -q -o '\(tun\|tap\|ppp\)[[:digit:]]\+$'
 }
 
