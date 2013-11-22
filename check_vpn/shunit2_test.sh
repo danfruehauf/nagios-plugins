@@ -227,6 +227,32 @@ test_pptp_allocate_vpn_device() {
 	assertTrue "allocate pptp device" "[ x$device = x'ppp0' ]"
 }
 
+# test pptp integration
+test_pptp_vpn_integration() {
+	_test_root || return
+
+	local -i retval=0
+	local username=root
+	local password=`pwmake $RANDOM`
+	local tmp_output=`mktemp`
+
+	# setup the vpn server, using ssh :)
+	ssh root@$VPN_SERVER_PPTP "echo '$username * $password *' > /etc/ppp/chap-secrets"
+
+	$CHECK_VPN -t pptp -H $VPN_SERVER_PPTP -u $username -p $password -d ppp40 -- require-mppe-128 refuse-pap refuse-eap refuse-chap refuse-mschap novj novjccomp nobsdcomp > $tmp_output
+	retval=$?
+
+	assertTrue "pptp vpn connection" \
+		"[ $retval -eq 0 ]"
+
+	local expected_string="OK: VPN to '$VPN_SERVER_PPTP' up and running on 'ppp40', 'http://www.google.com' reachable"
+	local output=`cut -d\| -f1 $tmp_output`
+	assertTrue "pptp vpn connection output" \
+		"[ x'$output' = x'$expected_string' ]"
+
+	rm -f $tmp_output
+}
+
 #######
 # SSH #
 #######
@@ -280,11 +306,20 @@ test_ssh_vpn_integration() {
 	_test_root || return
 
 	local -i retval=0
-	./check_vpn -t ssh -H 115.146.95.248 -u root -p uga -d tun1
+	local tmp_output=`mktemp`
+
+	./check_vpn -t ssh -H $VPN_SERVER_SSH -u root -p uga -d tun1 > $tmp_output
 	retval=$?
 
 	assertTrue "ssh vpn connection" \
 		"[ $retval -eq 0 ]"
+
+	local expected_string="OK: VPN to '$VPN_SERVER_PPTP' up and running on 'tun1', 'http://www.google.com' reachable"
+	local output=`cut -d\| -f1 $tmp_output`
+	assertTrue "ssh vpn connection output" \
+		"[ x'$output' = x'$expected_string' ]"
+
+	rm -f $tmp_output
 }
 
 ####################
@@ -302,6 +337,11 @@ oneTimeSetUp() {
 	CHECK_VPN=`dirname $0`/check_vpn
 	CHECK_VPN_NO_MAIN=`mktemp`
 	sed -e 's/^main .*//' $CHECK_VPN > $CHECK_VPN_NO_MAIN
+
+	VPN_SERVER_L2TP=115.146.95.248
+	VPN_SERVER_OPENVPN=115.146.95.248
+	VPN_SERVER_PPTP=115.146.95.248
+	VPN_SERVER_SSH=115.146.95.248
 }
 
 oneTimeTearDown() {
