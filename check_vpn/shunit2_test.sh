@@ -180,6 +180,32 @@ EOF
 	rm -f $tmp_l2tp_options $tmp_l2tp_options_expected
 }
 
+# test l2tp integration
+test_l2tp_vpn_integration() {
+	_test_root || return
+
+	local -i retval=0
+	local username=root
+	local password=`pwmake $RANDOM`
+	local tmp_output=`mktemp`
+
+	# setup the vpn server, using ssh :)
+	ssh root@$VPN_SERVER_L2TP "echo '$username * $password *' > /etc/ppp/pap-secrets"
+
+	$CHECK_VPN -t l2tp -H $VPN_SERVER_L2TP -u $username -p $password -d ppp6 > $tmp_output
+	retval=$?
+
+	assertTrue "l2tp vpn connection" \
+		"[ $retval -eq 0 ]"
+
+	local expected_string="OK: VPN to '$VPN_SERVER_L2TP' up and running on 'ppp6', 'http://www.google.com' reachable"
+	local output=`cut -d\| -f1 $tmp_output`
+	assertTrue "l2tp vpn connection output" \
+		"[ x'$output' = x'$expected_string' ]"
+
+	rm -f $tmp_output
+}
+
 ###########
 # OPENVPN #
 ###########
