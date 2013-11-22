@@ -70,6 +70,8 @@ test_is_specific_device() {
 
 # test check_vpn locking
 test_lock_check_vpn() {
+	_test_root || return
+
 	source $CHECK_VPN_NO_MAIN
 	rmdir $CHECK_VPN_LOCK >& /dev/null
 	assertFalse "lock doesn't exists" "test -d $CHECK_VPN_LOCK"
@@ -79,6 +81,8 @@ test_lock_check_vpn() {
 
 # test check_vpn locking
 test_unlock_check_vpn() {
+	_test_root || return
+
 	source $CHECK_VPN_NO_MAIN
 	mkdir -p $CHECK_VPN_LOCK
 	assertTrue "lock exists" "test -d $CHECK_VPN_LOCK"
@@ -180,32 +184,6 @@ EOF
 	rm -f $tmp_l2tp_options $tmp_l2tp_options_expected
 }
 
-# test l2tp integration
-test_l2tp_vpn_integration() {
-	_test_root || return
-
-	local -i retval=0
-	local username=root
-	local password=`pwmake $RANDOM`
-	local tmp_output=`mktemp`
-
-	# setup the vpn server, using ssh :)
-	ssh root@$VPN_SERVER_L2TP "echo '$username * $password *' > /etc/ppp/pap-secrets"
-
-	$CHECK_VPN -t l2tp -H $VPN_SERVER_L2TP -u $username -p $password -d ppp6 > $tmp_output
-	retval=$?
-
-	assertTrue "l2tp vpn connection" \
-		"[ $retval -eq 0 ]"
-
-	local expected_string="OK: VPN to '$VPN_SERVER_L2TP' up and running on 'ppp6', 'http://www.google.com' reachable"
-	local output=`cut -d\| -f1 $tmp_output`
-	assertTrue "l2tp vpn connection output" \
-		"[ x'$output' = x'$expected_string' ]"
-
-	rm -f $tmp_output
-}
-
 ###########
 # OPENVPN #
 ###########
@@ -251,32 +229,6 @@ test_pptp_allocate_vpn_device() {
 
 	local device=`_pptp_allocate_vpn_device`
 	assertTrue "allocate pptp device" "[ x$device = x'ppp0' ]"
-}
-
-# test pptp integration
-test_pptp_vpn_integration() {
-	_test_root || return
-
-	local -i retval=0
-	local username=root
-	local password=`pwmake $RANDOM`
-	local tmp_output=`mktemp`
-
-	# setup the vpn server, using ssh :)
-	ssh root@$VPN_SERVER_PPTP "echo '$username * $password *' > /etc/ppp/chap-secrets"
-
-	$CHECK_VPN -t pptp -H $VPN_SERVER_PPTP -u $username -p $password -d ppp40 -- require-mppe-128 refuse-pap refuse-eap refuse-chap refuse-mschap novj novjccomp nobsdcomp > $tmp_output
-	retval=$?
-
-	assertTrue "pptp vpn connection" \
-		"[ $retval -eq 0 ]"
-
-	local expected_string="OK: VPN to '$VPN_SERVER_PPTP' up and running on 'ppp40', 'http://www.google.com' reachable"
-	local output=`cut -d\| -f1 $tmp_output`
-	assertTrue "pptp vpn connection output" \
-		"[ x'$output' = x'$expected_string' ]"
-
-	rm -f $tmp_output
 }
 
 #######
@@ -327,27 +279,6 @@ test_ssh_device_prefix_ptp() {
 		"[ x$device_prefix = x'tun' ]"
 }
 
-# test ssh integration
-test_ssh_vpn_integration() {
-	_test_root || return
-
-	local -i retval=0
-	local tmp_output=`mktemp`
-
-	./check_vpn -t ssh -H $VPN_SERVER_SSH -u root -p uga -d tun1 > $tmp_output
-	retval=$?
-
-	assertTrue "ssh vpn connection" \
-		"[ $retval -eq 0 ]"
-
-	local expected_string="OK: VPN to '$VPN_SERVER_PPTP' up and running on 'tun1', 'http://www.google.com' reachable"
-	local output=`cut -d\| -f1 $tmp_output`
-	assertTrue "ssh vpn connection output" \
-		"[ x'$output' = x'$expected_string' ]"
-
-	rm -f $tmp_output
-}
-
 ####################
 # COMMON FUNCTIONS #
 ####################
@@ -363,11 +294,6 @@ oneTimeSetUp() {
 	CHECK_VPN=`dirname $0`/check_vpn
 	CHECK_VPN_NO_MAIN=`mktemp`
 	sed -e 's/^main .*//' $CHECK_VPN > $CHECK_VPN_NO_MAIN
-
-	VPN_SERVER_L2TP=115.146.95.248
-	VPN_SERVER_OPENVPN=115.146.95.248
-	VPN_SERVER_PPTP=115.146.95.248
-	VPN_SERVER_SSH=115.146.95.248
 }
 
 oneTimeTearDown() {
