@@ -33,7 +33,7 @@ test_l2tp_vpn_integration() {
 	local tmp_output=`mktemp`
 
 	# setup the vpn server, using ssh :)
-	ssh root@$VPN_SERVER_L2TP "echo '$username * $password *' > /etc/ppp/pap-secrets"
+	ssh root@$VPN_SERVER_L2TP "echo '$username * $password *' > /etc/ppp/chap-secrets"
 
 	$CHECK_VPN -l -t l2tp -H $VPN_SERVER_L2TP -u $username -p $password -d ppp6 -- noccp > $tmp_output
 	retval=$?
@@ -54,9 +54,36 @@ test_l2tp_vpn_integration() {
 ###########
 # test l2tp integration
 test_openvpn_vpn_integration() {
-	# TODO implement!
 	_test_root || return
-	true
+
+	local -i retval=0
+	local username=root
+	local password=`pwmake $RANDOM`
+	local tmp_output=`mktemp`
+	local tmp_server_cert=`mktemp`
+
+	# setup the vpn server, using ssh :)
+	ssh root@$VPN_SERVER_OPENVPN \
+		"echo '$username' > /etc/openvpn/passwd && echo '$password' >> /etc/openvpn/passwd"
+
+	# get server certificate
+	scp root@$VPN_SERVER_OPENVPN:/etc/openvpn/ca.crt $tmp_server_cert > /dev/null
+	retval=$?
+	assertTrue "openvpn vpn server certificate copy" \
+		"[ $retval -eq 0 ]"
+
+	$CHECK_VPN -l -t openvpn -H $VPN_SERVER_PPTP -u $username -p $password -d tun91 -- --ca $tmp_server_cert --proto tcp --cipher AES-256-CBC --comp-lzo > $tmp_output
+	retval=$?
+
+	assertTrue "openvpn vpn connection" \
+		"[ $retval -eq 0 ]"
+
+	local expected_string="OK: VPN to '$VPN_SERVER_PPTP' up and running on 'tun91', 'http://www.google.com' reachable"
+	local output=`cut -d\| -f1 $tmp_output`
+	assertTrue "openvpn vpn connection output" \
+		"[ x'$output' = x'$expected_string' ]"
+
+	rm -f $tmp_output $tmp_server_cert
 }
 
 ########
