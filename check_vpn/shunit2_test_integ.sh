@@ -153,10 +153,12 @@ _test_root() {
 oneTimeSetUp() {
 	CHECK_VPN=`dirname $0`/check_vpn
 
-	VPN_SERVER_L2TP=115.146.95.248
-	VPN_SERVER_OPENVPN=115.146.95.248
-	VPN_SERVER_PPTP=115.146.95.248
-	VPN_SERVER_SSH=115.146.95.248
+	echo "Please set your VPN server in order to run these tests" && exit 2
+
+	VPN_SERVER_L2TP=$VPN_SERVER
+	VPN_SERVER_OPENVPN=$VPN_SERVER
+	VPN_SERVER_PPTP=$VPN_SERVER
+	VPN_SERVER_SSH=$VPN_SERVER
 }
 
 oneTimeTearDown() {
