@@ -186,13 +186,26 @@ vpn_connectivity_check() {
 	return $retval
 }
 
-
 # prints usage and exits
 usage() {
-	echo "Usage: $0 -t|--type VPN_TYPE [-l|--lock] -H|--host HOSTNAME -u|--username USERNAME -p|--password PASSWORD [-d|--device DEVICE] [-U|--url TEST_URL] [--] [extra_args]"
-	echo "extra_args are VPN specific arguemnts"
-	echo "Example: $0 -t openvpn -H vpn.vpn-provider.com -u dan -p password -d tun25 -- --cipher none --ca /etc/openvpn/ca.crt" 1>&2
-	exit 3
+	echo "Usage: $0 -t VPN_TYPE -H HOSTNAME -u USERNAME -p PASSWORD [OPTIONS]... -- extra_arguments"
+	echo "Tests a VPN connection."
+	echo "Extra arguments can be specified after --, please refer to the plugin"
+	echo "you're using to understand what options can be passed"
+	echo
+	echo "
+Options:
+  -t, --type                 VPN type, one of: l2tp, openvpn, pptp, ssh.
+  -h, --hostname             Hostname to connect to.
+  -u, --username             Username to use with VPN.
+  -p, --password             Password to use with VPN.
+  -l, --lock                 Use global lock to avoid running check_vpn more
+                             then once at the same time.
+  -d, --device               Device to use, can be a specific device (tunX,
+                             tapX, pppX) or just a prefix (tun, tap, ppp).
+  -U, --url                  URL to test connectivity with, the default is
+                             http://www.google.com"
+	exit 2
 }
 
 # main
