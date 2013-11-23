@@ -250,7 +250,7 @@ main() {
 	local -i retval=0
 
 	# destroy any running VPN connections to this lns
-	_${type}_stop_vpn $lns
+	_${type}_stop_vpn $lns $device
 
 	# start vpn
 	_${type}_start_vpn $lns $username $password $device "$@"
