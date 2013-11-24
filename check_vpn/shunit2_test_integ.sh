@@ -72,13 +72,13 @@ test_openvpn_vpn_integration() {
 	assertTrue "openvpn vpn server certificate copy" \
 		"[ $retval -eq 0 ]"
 
-	$CHECK_VPN -l -t openvpn -H $VPN_SERVER_PPTP -u $username -p $password -d tun91 -- --ca $tmp_server_cert --proto tcp --cipher AES-256-CBC --comp-lzo > $tmp_output
+	$CHECK_VPN -l -t openvpn -H $VPN_SERVER_OPENVPN -u $username -p $password -d tun91 -- --ca $tmp_server_cert --proto tcp --cipher AES-256-CBC --comp-lzo > $tmp_output
 	retval=$?
 
 	assertTrue "openvpn vpn connection" \
 		"[ $retval -eq 0 ]"
 
-	local expected_string="OK: VPN to '$VPN_SERVER_PPTP' up and running on 'tun91', 'http://www.google.com' reachable"
+	local expected_string="OK: VPN to '$VPN_SERVER_OPENVPN' up and running on 'tun91', 'http://www.google.com' reachable"
 	local output=`cut -d\| -f1 $tmp_output`
 	assertTrue "openvpn vpn connection output" \
 		"[ x'$output' = x'$expected_string' ]"
