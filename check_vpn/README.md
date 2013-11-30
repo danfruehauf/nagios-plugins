@@ -132,7 +132,10 @@ To use locking you need ot specify <i>-l</i> or <i>--lock</i>. For instance the 
 
 Generally speaking I would encourage running check_vpn with the <i>--lock</i> option as it can avoid many problems. Should the lock file get stuck and undeleted for any reason please:
  * Fill in an issue of how to reproduce
- * rmdir /var/run/check_vpn
+ * Run:
+```
+rmdir /var/run/check_vpn
+```
 
 ## Limitations
 
@@ -183,8 +186,6 @@ declare -i device_number=$(expr `echo first-host.openvpn.vpn.com | cksum | cut -
 declare -i device_number=$(expr `echo another-host.openvpn.vpn.com | cksum | cut -d' ' -f1` % 255)
 # device_number=168
 ```
-
-This was tested fully with OpenVPN and SSH, however I still need to setup a proper test environment for L2TP and PPTP.
 
 In case multiple access is still being an issue, please refer to the section about [Locking](README.md#locking).
 
