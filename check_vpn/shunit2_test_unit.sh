@@ -70,21 +70,22 @@ test_is_specific_device() {
 
 # test check_vpn locking
 test_lock_check_vpn() {
-	_test_root || return
-
 	source $CHECK_VPN_NO_MAIN
-	rmdir $CHECK_VPN_LOCK >& /dev/null
+
+	# mock CHECK_VPN_LOCK
+	export CHECK_VPN_LOCK=`mktemp -d -u`
 	assertFalse "lock doesn't exists" "test -d $CHECK_VPN_LOCK"
 	lock_check_vpn
 	assertTrue "lock exists" "test -d $CHECK_VPN_LOCK"
+	rmdir $CHECK_VPN_LOCK
 }
 
 # test check_vpn locking
 test_unlock_check_vpn() {
-	_test_root || return
-
 	source $CHECK_VPN_NO_MAIN
-	mkdir -p $CHECK_VPN_LOCK
+
+	# mock CHECK_VPN_LOCK
+	export CHECK_VPN_LOCK=`mktemp -d`
 	assertTrue "lock exists" "test -d $CHECK_VPN_LOCK"
 	unlock_check_vpn
 	assertFalse "lock doesn't exists" "test -d $CHECK_VPN_LOCK"
@@ -279,13 +280,6 @@ test_ssh_device_prefix_ptp() {
 		"[ x$device_prefix = x'tun' ]"
 }
 
-####################
-# COMMON FUNCTIONS #
-####################
-_test_root() {
-	assertTrue "test running as root" "[ `id -u` -eq 0 ]"
-}
-
 ##################
 # SETUP/TEARDOWN #
 ##################
@@ -293,7 +287,7 @@ _test_root() {
 oneTimeSetUp() {
 	CHECK_VPN=`dirname $0`/check_vpn
 	CHECK_VPN_NO_MAIN=`mktemp`
-	sed -e 's/^main .*//' $CHECK_VPN > $CHECK_VPN_NO_MAIN
+	sed -e 's/^main .*//' $CHECK_VPN -e 's/^declare -r/declare/g' > $CHECK_VPN_NO_MAIN
 }
 
 oneTimeTearDown() {
