@@ -34,6 +34,7 @@ your nagios directory, usually under `/usr/lib64/nagios/plugins` or
 nagios, you must add a line in sudoers such as:
 ```
 nagios ALL=(ALL) NOPASSWD:/usr/lib64/nagios/plugins/check_vpn
+Defaults!/usr/lib64/nagios/plugins/check_vpn !requiretty
 ```
 
 ### Nagios
