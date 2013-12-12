@@ -20,6 +20,35 @@
 
 # integration tests for check_vpn
 
+##########
+# IODINE #
+##########
+# test l2tp integration
+test_iodine_vpn_integration() {
+	_test_root || return
+
+	local -i retval=0
+	local domain=www.something.com
+	local password=`pwmake $RANDOM`
+	local tmp_output=`mktemp`
+
+	# setup iodine on the other end
+	ssh root@$VPN_SERVER_IODINE "pkill iodined; iodined -P '$password' 10.1.1.2/24 $domain >& /dev/null"
+
+	$CHECK_VPN -l -t iodine -H $VPN_SERVER_IODINE -u $domain -p $password -d dns50 -- -m 500 > $tmp_output
+	retval=$?
+
+	assertTrue "iodine vpn connection" \
+		"[ $retval -eq 0 ]"
+
+	local expected_string="OK: VPN to '$VPN_SERVER_IODINE' up and running on 'dns50', 'http://www.google.com' reachable"
+	local output=`cut -d\| -f1 $tmp_output`
+	assertTrue "iodine vpn connection output" \
+		"[ x'$output' = x'$expected_string' ]"
+
+	rm -f $tmp_output
+}
+
 ########
 # L2TP #
 ########
@@ -155,6 +184,7 @@ oneTimeSetUp() {
 
 	echo "Please set your VPN server in order to run these tests" && exit 2
 
+	VPN_SERVER_IODINE=$VPN_SERVER
 	VPN_SERVER_L2TP=$VPN_SERVER
 	VPN_SERVER_OPENVPN=$VPN_SERVER
 	VPN_SERVER_PPTP=$VPN_SERVER
