@@ -44,7 +44,7 @@ allocate_vpn_device() {
 # $1 - device
 is_specific_device() {
 	local device=$1; shift
-	echo $device | grep -q -o '\(tun\|tap\|ppp\)[[:digit:]]\+$'
+	echo $device | grep -q -o '\(tun\|tap\|ppp\|dns\)[[:digit:]]\+$'
 }
 
 # emits critical error and quits if not running as root
@@ -133,7 +133,8 @@ get_routing_table_for_device() {
 		tap) device_nr_base=2000;;
 		tun) device_nr_base=3000;;
 		ppp) device_nr_base=4000;;
-		*) device_nr_base=5000;;
+		dns) device_nr_base=5000;;
+		*) device_nr_base=6000;;
 	esac
 
 	local -i table_nr=`expr $device_nr_base + $device_nr`

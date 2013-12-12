@@ -5,6 +5,7 @@ http://exchange.nagios.org/directory/Plugins/Network-and-Systems-Management/chec
 check_vpn is a nagios plugin to check VPN status.
 
 The types of VPNs currently supported are:
+ * Iodine
  * OpenVPN
  * SSH
  * L2TP
@@ -64,12 +65,20 @@ define service {
 	./check_vpn -t VPN_TYPE -H REMOTE_HOST -u USERNAME -p PASSWORD -- EXTRA_ARGS
 
  * VPN_TYPE is one of the plugins under <i>check_vpn_plugins</i>:
+   * iodine
    * openvpn
    * ssh
    * l2tp
    * pptp
 
 ## Plugin Specifics
+
+### Iodine
+
+Example:
+```
+./check_vpn -t iodine -H iodine.vpn.com -u www.somedomain.com -p password -- -m 500
+```
 
 ### OpenVPN
 
