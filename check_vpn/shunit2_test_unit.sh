@@ -23,7 +23,7 @@
 ######################
 # test check_open_port, unreachable host
 test_check_open_port_unresolvable() {
-	source $CHECK_VPN_NO_MAIN
+	source $CHECK_VPN
 	check_open_port some.domain.that.doesnt.exist.com 1111 >& /dev/null
 	assertFalse "host unresolvable" \
 		"[ $? -eq 0 ]"
@@ -31,7 +31,7 @@ test_check_open_port_unresolvable() {
 
 # test check_open_port
 test_check_open_port_filtered() {
-	source $CHECK_VPN_NO_MAIN
+	source $CHECK_VPN
 	check_open_port www.google.com 1111 >& /dev/null
 	assertFalse "port filtered" \
 		"[ $? -eq 0 ]"
@@ -39,7 +39,7 @@ test_check_open_port_filtered() {
 
 # test check_open_port, filtered port
 test_check_open_port_closed() {
-	source $CHECK_VPN_NO_MAIN
+	source $CHECK_VPN
 	check_open_port localhost 1111 >& /dev/null
 	assertFalse "port closed" \
 		"[ $? -eq 0 ]"
@@ -47,7 +47,7 @@ test_check_open_port_closed() {
 
 # test check_open_port
 test_check_open_port_open() {
-	source $CHECK_VPN_NO_MAIN
+	source $CHECK_VPN
 	check_open_port www.google.com 80 >& /dev/null
 	assertTrue "port open" \
 		"[ $? -eq 0 ]"
@@ -55,7 +55,7 @@ test_check_open_port_open() {
 
 # test the is_specific_device function
 test_is_specific_device() {
-	source $CHECK_VPN_NO_MAIN
+	source $CHECK_VPN
 
 	assertTrue  "tun1:   specific" "is_specific_device tun1"
 	assertTrue  "tap10:  specific" "is_specific_device tap10"
@@ -70,7 +70,7 @@ test_is_specific_device() {
 
 # test check_vpn locking
 test_lock_check_vpn() {
-	source $CHECK_VPN_NO_MAIN
+	source $CHECK_VPN
 
 	# mock CHECK_VPN_LOCK
 	export CHECK_VPN_LOCK=`mktemp -d -u`
@@ -82,7 +82,7 @@ test_lock_check_vpn() {
 
 # test check_vpn locking
 test_unlock_check_vpn() {
-	source $CHECK_VPN_NO_MAIN
+	source $CHECK_VPN
 
 	# mock CHECK_VPN_LOCK
 	export CHECK_VPN_LOCK=`mktemp -d`
@@ -93,7 +93,7 @@ test_unlock_check_vpn() {
 
 # test routing table used for device
 test_routing_table_for_device() {
-	source $CHECK_VPN_NO_MAIN
+	source $CHECK_VPN
 	local -i routing_table
 
 	routing_table=`get_routing_table_for_device tap101`
@@ -286,12 +286,10 @@ test_ssh_device_prefix_ptp() {
 
 oneTimeSetUp() {
 	CHECK_VPN=`dirname $0`/check_vpn
-	CHECK_VPN_NO_MAIN=`mktemp`
-	sed -e 's/^main .*//' $CHECK_VPN -e 's/^declare -r/declare/g' > $CHECK_VPN_NO_MAIN
 }
 
 oneTimeTearDown() {
-	rm -f $CHECK_VPN_NO_MAIN
+	true
 }
 
 setUp() {

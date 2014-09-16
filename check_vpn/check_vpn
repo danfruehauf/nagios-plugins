@@ -20,7 +20,7 @@
 declare -r DEFAULT_TEST_URL=http://www.google.com
 
 # check_vpn lock, for preventing multiple access to resources
-declare -r CHECK_VPN_LOCK=/var/run/check_vpn
+CHECK_VPN_LOCK=/var/run/check_vpn
 
 # global error string to report errors
 ERROR_STRING=""
@@ -287,4 +287,9 @@ main() {
 	return $retval
 }
 
-main "$@"
+# don't run main if running shunit
+if [[ `basename $0` =~ ^shunit2_.* ]]; then
+	true
+else
+	main "$@"
+fi
