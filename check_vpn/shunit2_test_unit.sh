@@ -106,7 +106,7 @@ test_routing_table_for_device() {
 	assertTrue "routing table for ppp250" "[ $routing_table -eq 4250 ]"
 
 	routing_table=`get_routing_table_for_device crapper1020`
-	assertTrue "routing table for crapper1020" "[ $routing_table -eq 6020 ]"
+	assertTrue "routing table for crapper1020" "[ $routing_table -eq 7020 ]"
 }
 
 ###########

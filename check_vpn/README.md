@@ -204,15 +204,15 @@ If you may be connecting to two (or more) different servers who may assign you t
 
 ```
 # ifconfig
-tap0      Link encap:Ethernet  HWaddr XX:XX:XX:XX:XX:XX  
+tap0      Link encap:Ethernet  HWaddr XX:XX:XX:XX:XX:XX
       inet addr:10.1.0.1  Bcast:10.1.0.255  Mask:255.255.255.0
       ...
 
-tap1      Link encap:Ethernet  HWaddr XX:XX:XX:XX:XX:XX  
+tap1      Link encap:Ethernet  HWaddr XX:XX:XX:XX:XX:XX
       inet addr:10.1.0.1  Bcast:10.1.0.255  Mask:255.255.255.0
       ...
 
-tap2      Link encap:Ethernet  HWaddr XX:XX:XX:XX:XX:XX  
+tap2      Link encap:Ethernet  HWaddr XX:XX:XX:XX:XX:XX
       inet addr:10.1.0.1  Bcast:10.1.0.255  Mask:255.255.255.0
       ...
 ```
