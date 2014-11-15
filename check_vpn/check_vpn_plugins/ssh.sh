@@ -90,7 +90,7 @@ _ssh_start_vpn() {
 
 	# TODO this is susecptible to race conditions if a few people try to
 	# allocate a device at the same time
-	local remote_device=$(ssh "$@" $username@$lns "for i in \`seq 0 255\`; do ! ifconfig $device_prefix\$i >& /dev/null && echo $device_prefix\$i && break; done")
+	local remote_device=$(ssh "$@" $username@$lns "for i in \`seq 0 255\`; do ! ip link show $device_prefix\$i >& /dev/null && echo $device_prefix\$i && break; done")
 	if [ x"$remote_device" = x ]; then
 		ERROR_STRING="Error: Could not allocate '$device_prefix' device on '$lns'"
 		return 1
@@ -104,9 +104,9 @@ _ssh_start_vpn() {
 	fi
 
 	# activate tunnel
-	ssh -o ServerAliveInterval=10 -o TCPKeepAlive=yes -f "$@" -w $device_nr:$remote_device_nr $tunnel_parameters $username@$lns "/sbin/ifconfig $remote_device $remote_ip netmask 255.255.255.252" && \
-	ifconfig $device $local_ip netmask 255.255.255.252 && \
-	
+	ssh -o ServerAliveInterval=10 -o TCPKeepAlive=yes -f "$@" -w $device_nr:$remote_device_nr $tunnel_parameters $username@$lns "ip addr change $remote_ip/30 dev $remote_device && ip link set $remote_device up" && \
+	ip addr change $local_ip/30 dev $device && ip link set $device up && \
+
 	if [ $? -ne 0 ]; then
 		ERROR_STRING="Error: SSH connection failed to '$lns'"
 		return 1

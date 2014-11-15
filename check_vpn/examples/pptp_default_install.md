@@ -20,7 +20,7 @@ require-mschap-v2
 require-mppe-128
 proxyarp
 lock
-nobsdcomp 
+nobsdcomp
 novj
 novjccomp
 nologfd
