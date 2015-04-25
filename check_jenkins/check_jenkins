@@ -1,0 +1,94 @@
+#!/usr/bin/ruby
+
+require 'json'
+require 'open-uri'
+require 'trollop'
+require 'net/http'
+require 'net/https'
+
+# Get job status
+def get_job_status_json(url, username, password)
+  uri = URI(url)
+
+  http_response_body = ""
+  Net::HTTP.start(uri.host, uri.port,
+    :use_ssl => uri.scheme == 'https') do |http|
+      request = Net::HTTP::Get.new uri.request_uri
+      if username && password
+        request.basic_auth username, password
+      end
+
+      response = http.request request
+      http_response_body = response.body
+  end
+
+  return http_response_body
+end
+
+# Given a host_name and monitor_name, returns its status
+def get_jenkins_job_status(opts)
+  jenkins_url      = opts[:jenkins_url]
+  jenkins_job      = opts[:jenkins_job]
+  jenkins_username = opts[:jenkins_username]
+  jenkins_password = opts[:jenkins_password]
+
+  job_url = jenkins_url + "/job/" + URI::encode(jenkins_job) + "/api/json"
+
+  begin
+    job_status = get_job_status_json(job_url, jenkins_username, jenkins_password)
+    job_status = JSON.parse(job_status)
+  rescue
+    puts "UNKNOWN: Could not parse JSON at '#{job_url}'"
+    return 3
+  end
+
+  job_color = job_status['color']
+
+  if "blue" == job_color
+    puts "OK: Job '#{jenkins_job}' passed"
+    return 0
+  elsif "aborted" == job_color || "yellow" == job_color
+    puts "Warning: Job '#{jenkins_job}' #{job_color}"
+    return 1
+  elsif "red" == job_color
+    puts "Critical: Job '#{jenkins_job}' failed"
+    return 2
+  else
+    puts "Unknown: Job '#{jenkins_job}' in '#{job_color}' state"
+    return 3
+  end
+end
+
+# Arguments parsing
+opts = Trollop::options do
+  banner <<-EOS
+    Get status of a jenkins job.
+
+    Example:
+        Show job status for 'job_name' on 'jenkins.com'
+            check_jenkins -u username -p password -U https://jenkins.com -j job_name
+
+    Options:
+EOS
+  opt :jenkins_url, "Jenkins base URL",
+    :type => :string,
+    :short   => '-U'
+  opt :jenkins_username,
+    "Jenkins username for login",
+    :type  => :string,
+    :short => '-u'
+  opt :jenkins_password,
+    "Jenkins password for login",
+    :type  => :string,
+    :short => '-p'
+  opt :jenkins_job,
+    "Job to check",
+    :type  => :string,
+    :short => '-j'
+end
+
+%w{ jenkins_url jenkins_job }.each do |option|
+  Trollop::die option.to_sym, "Must specify #{option.gsub('_', ' ')}" if ! opts[option.to_sym]
+end
+
+exit(get_jenkins_job_status(opts))
