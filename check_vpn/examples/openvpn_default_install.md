@@ -1,6 +1,6 @@
 # OpenVPN
 
-This is an example for running the default installation of openvpn (on Fedora 19).
+This is an example for running the default installation of openvpn (on Fedora 24).
 
 ## Configuration
 
@@ -11,7 +11,7 @@ proto tcp
 dev tun
 comp-lzo
 cipher AES-256-CBC
-dh dh1024.pem
+dh dh2048.pem
 server 10.1.0.0 255.255.255.0
 persist-key
 persist-tun
@@ -30,7 +30,7 @@ push "dhcp-option DNS 8.8.8.8"
 
 Copy default keys from the openvpn installation:
 ```
-# cp -a /usr/share/doc/openvpn-2.3.2/sample-keys/{ca.crt,dh1024.pem,server.crt,server.key} /etc/openvpn/
+# cp -a /usr/share/doc/openvpn/sample/sample-keys/{ca.crt,dh2048.pem,server.crt,server.key} /etc/openvpn/
 ```
 
 **Finally**, make sure you choose some sort of authentication mechanism. Sorry, but
@@ -43,5 +43,5 @@ valid combination to login to this OpenVPN configuration.
 
 The command that should work with the above configuration is:
 ```
-# check_vpn -t openvpn -H $VPN_SERVER_OPENVPN -u username -p some_password -d tun -- --ca openvpn_default_server_crt --proto tcp --cipher AES-256-CBC --comp-lzo
+# check_vpn -t openvpn -H $VPN_SERVER_OPENVPN -u username -p some_password -d tun -- --ca /usr/share/doc/openvpn/sample/sample-keys/ca.crt --proto tcp --cipher AES-256-CBC --comp-lzo
 ```
