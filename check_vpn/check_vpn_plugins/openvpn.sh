@@ -26,6 +26,9 @@ declare -i -r OPENVPN_PORT=1194
 # $1 - device prefix
 _openvpn_allocate_vpn_device() {
 	local device_prefix=$1; shift
+	if [ x"$device_prefix" = x ]; then
+		device_prefix=$OPENVPN_DEVICE_PREFIX
+	fi
 	allocate_vpn_device $device_prefix
 }
 
