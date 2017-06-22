@@ -25,7 +25,7 @@ check_vpn features the following:
  * Does not interfere with current network communications of machine (using source based routing per connected device)
  * Plugin architecture allows addition of more VPN plugins easily
 
-## Instalation
+## Installation
 
 Simply check out the repository, or copy `check_vpn` and `check_vpn_plugins` to
 your nagios directory, usually under `/usr/lib64/nagios/plugins` or
