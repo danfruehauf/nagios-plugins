@@ -67,7 +67,7 @@ _ssh_start_vpn() {
 	local device_prefix=${device:0:3}
 	local -i retval=0
 
-	if ! which ssh >& /dev/nulll; then
+	if ! which ssh >& /dev/null; then
 		ERROR_STRING="Error: ssh not installed"
 		return 1
 	fi

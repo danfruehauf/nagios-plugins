@@ -62,7 +62,7 @@ _l2tp_start_vpn() {
 		return 1
 	fi
 
-	if ! which xl2tpd >& /dev/nulll; then
+	if ! which xl2tpd >& /dev/null; then
 		ERROR_STRING="Error: xl2tpd not installed"
 		return 1
 	fi

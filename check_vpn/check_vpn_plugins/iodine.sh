@@ -58,7 +58,7 @@ _iodine_start_vpn() {
 	local -i retval=0
 	local tmp_output=`mktemp`
 
-	if ! which iodine >& /dev/nulll; then
+	if ! which iodine >& /dev/null; then
 		ERROR_STRING="Error: iodine not installed"
 		return 1
 	fi

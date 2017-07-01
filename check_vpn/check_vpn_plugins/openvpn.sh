@@ -61,7 +61,7 @@ _openvpn_start_vpn() {
 	local device=$1; shift
 	local -i retval=0
 
-	if ! which openvpn >& /dev/nulll; then
+	if ! which openvpn >& /dev/null; then
 		ERROR_STRING="Error: openvpn not installed"
 		return 1
 	fi
