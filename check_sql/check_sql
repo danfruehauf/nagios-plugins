@@ -166,7 +166,7 @@ my $verbose = $np->opts->verbose;
 my @drivers = DBI->available_drivers;
 my ($DBI, $driver) = split /:/, $dsn;
 
-$np->nagios_exit('UNKNONW', 'DBI driver is required')
+$np->nagios_exit('UNKNOWN', 'DBI driver is required')
    if (($DBI eq "DBI") && (join (", ", @drivers) !~ /$driver/));
 
 $np->nagios_exit('UNKNOWN', 'DSN contains invalid characters.')
