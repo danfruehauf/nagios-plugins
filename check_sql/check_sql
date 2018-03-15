@@ -162,7 +162,12 @@ my $show = $np->opts->show;
 my ($label, $uom) = split(/,/, $np->opts->label);
 my $verbose = $np->opts->verbose;
 
-# TODO: Should check if the DBI driver exists
+# Check existence of DBI driver
+my @drivers = DBI->available_drivers;
+my ($DBI, $driver) = split /:/, $dsn;
+
+$np->nagios_exit('UNKNOWN', 'DBI driver is required')
+	if (($DBI eq "DBI") && (join (", ", @drivers) !~ /$driver/));
 
 $np->nagios_exit('UNKNOWN', 'DSN contains invalid characters.')
 	if ($dsn =~ /\`|\~|\!|\$|\%|\^|\&|\*|\||\'|\"|\<|\>|\?|\,|\(|\)/);
