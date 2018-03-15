@@ -167,7 +167,7 @@ my @drivers = DBI->available_drivers;
 my ($DBI, $driver) = split /:/, $dsn;
 
 $np->nagios_exit('UNKNOWN', 'DBI driver is required')
-   if (($DBI eq "DBI") && (join (", ", @drivers) !~ /$driver/));
+	if (($DBI eq "DBI") && (join (", ", @drivers) !~ /$driver/));
 
 $np->nagios_exit('UNKNOWN', 'DSN contains invalid characters.')
 	if ($dsn =~ /\`|\~|\!|\$|\%|\^|\&|\*|\||\'|\"|\<|\>|\?|\,|\(|\)/);
