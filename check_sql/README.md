@@ -42,6 +42,9 @@ DSN is the DBI connection string to connect to the database. Some examples:
 
 	# SQL server at cakes.microsoft.com:1433
 	DBI:Sybase:server=cakes.microsoft.com:1433
+	
+	# sqlite3 database located at /var/db/sqlite.db
+	dbi:SQLite:dbname=/var/db/sqlite.db
 
 Refer to the specific tutorial to find the right DSN for your DB.
 
@@ -96,6 +99,18 @@ Example:
 
 	./check_sql -v -s -d DBI:Sybase:server=SERVER_NAME:PORT -U DB_USERNAME -P DB_PASSWORD -q "select count(*) from some_table"
 
+### SQLite
+
+Things you'll need:
+ * perl DBD-SQLite
+
+Example:
+
+	./check_sql -v -s -d DBI:SQLite:dbname=/var/db/sqlite.db -q "SELECT COUNT(*) FROM some_table"
+
 ### Limitations
 
 Please open me issues if you find any. I promise to address them as soon as I can.
+
+
+
