@@ -10,10 +10,10 @@ I've personally tested check_sql with the following:
  * MySQL
  * PostgreSQL
  * SQL Server
+ * SQLite
 
 It should support also:
  * Oracle databases
- * SQLite
  * CSV
  * Many other databases I've never used :)
 
@@ -44,7 +44,7 @@ DSN is the DBI connection string to connect to the database. Some examples:
 	DBI:Sybase:server=cakes.microsoft.com:1433
 	
 	# sqlite3 database located at /var/db/sqlite.db
-	dbi:SQLite:dbname=/var/db/sqlite.db
+	DBI:SQLite:dbname=/var/db/sqlite.db
 
 Refer to the specific tutorial to find the right DSN for your DB.
 
