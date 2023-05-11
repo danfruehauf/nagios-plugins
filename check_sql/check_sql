@@ -1,4 +1,4 @@
-#! /usr/bin/perl -w
+#!/usr/bin/env -S perl -w
 
 #
 # check_sql - run a simple test query against a database via DBI
@@ -36,7 +36,7 @@ $LABEL = 'result';
 
 my $np = Nagios::Plugin->new(
 	usage => "Usage: %s -d dsn [ -t <timeout> ]\n"
-		. "    -U <user> -P <pass> [ -w <warn_range> ] [ -c <crit_range> ]\n"
+                . "    [ -U <user> ] [ -P <pass> ] [ -w <warn_range> ] [ -c <crit_range> ]\n"
 		. "    [ -W <warn_range> ] [ -C <crit_range> ] [ -q query ] [ -e expect_string ]\n"
 		. '    [ -r ] [ -s ] [ -l label ]',
 	version => $VERSION,
@@ -58,14 +58,14 @@ $np->add_arg(
 	spec => 'username|U=s',
 	help => "-U, --username=<username>\n"
 		. '   Username to connect with.',
-	required => 1,
+	required => 0,
 );
 
 $np->add_arg(
 	spec => 'password|P=s',
 	help => "-P, --password=<password>\n"
 		. '   Password to use with the username.',
-	required => 1,
+	required => 0,
 );
 
 $np->add_arg(
@@ -170,12 +170,6 @@ $np->nagios_exit('UNKNOWN', "Cannot find DBI driver '$driver'")
 
 $np->nagios_exit('UNKNOWN', 'DSN contains invalid characters.')
 	if ($dsn =~ /\`|\~|\!|\$|\%|\^|\&|\*|\||\'|\"|\<|\>|\?|\,|\(|\)/);
-
-$np->nagios_exit('UNKNOWN', 'Username is required.')
-	if ($username eq '');
-
-$np->nagios_exit('UNKNOWN', 'Password is required.')
-	if ($password eq '');
 
 $np->nagios_exit('UNKNOWN', '-e cannot be used with -W or -C')
 	if ($expect && ($rwarning || $rcritical));
