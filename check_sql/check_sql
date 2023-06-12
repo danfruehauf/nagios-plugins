@@ -24,8 +24,8 @@ use strict;
 use warnings;
 use vars qw($PROGNAME $VERSION $QSTRING $LABEL);
 use File::Basename qw(basename);
-use Nagios::Plugin;
-use Nagios::Plugin::Functions qw(max_state);
+use Monitoring::Plugin;
+use Monitoring::Plugin::Functions qw(max_state);
 use Time::HiRes qw(gettimeofday tv_interval);
 use DBI;
 
@@ -34,7 +34,7 @@ $VERSION = '0.9.3';
 $QSTRING = 'SELECT 1 AS Response';
 $LABEL = 'result';
 
-my $np = Nagios::Plugin->new(
+my $np = Monitoring::Plugin->new(
 	usage => "Usage: %s -d dsn [ -t <timeout> ]\n"
                 . "    [ -U <user> ] [ -P <pass> ] [ -w <warn_range> ] [ -c <crit_range> ]\n"
 		. "    [ -W <warn_range> ] [ -C <crit_range> ] [ -q query ] [ -e expect_string ]\n"
